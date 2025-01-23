@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 23)
 #set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 set(SOURCES
-    src/main.cpp
+    src/adc_sampler.c
 )
 
 add_executable(adc_sampler ${SOURCES})

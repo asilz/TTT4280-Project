@@ -3,7 +3,7 @@ import math_import
 import matplotlib.pyplot as plt
 import numpy as np
 
-sample_period, data = raspi_import('/home/gruppe22/Documents/TTT4280-Project/C/measurements/lab2_second_angle/out-2025-02-17-12.54.18.bin')
+sample_period, data = raspi_import('/home/asil/Documents/ttt4280/TTT4280-Project/C/measurements/lab2_first_angle/out-2025-02-17-12.49.44.bin')
 
 #Number of samples
 SAMPLE_COUNT = 31250
@@ -16,24 +16,24 @@ numSamplesPlot = SAMPLE_COUNT - 10
 
 
 #Make lists for data channels
-c1 = np.zeros(SAMPLE_COUNT)
-c2 = np.zeros(SAMPLE_COUNT)
-c3 = np.zeros(SAMPLE_COUNT)
-c4 = np.zeros(SAMPLE_COUNT)
-c5 = np.zeros(SAMPLE_COUNT)
+c1 = np.zeros(numSamplesPlot)
+c2 = np.zeros(numSamplesPlot)
+c3 = np.zeros(numSamplesPlot)
+c4 = np.zeros(numSamplesPlot)
+c5 = np.zeros(numSamplesPlot)
 
 #Put data from channels into corresponding arrays
-for i in range(SAMPLE_COUNT):
-    c1[i] = data[i][0]*0.81*10**-3 - 3.3/2
-    c2[i] = data[i][1]*0.81*10**-3 - 3.3/2
-    c3[i] = data[i][2]*0.81*10**-3 - 3.3/2
-    c4[i] = data[i][3]*0.81*10**-3 - 3.3/2
-    c5[i] = data[i][4]*0.81*10**-3 - 3.3/2
+for i in range(10, SAMPLE_COUNT):
+    c1[i-10] = data[i][0]*0.81*10**-3 - 3.3/2
+    c2[i-10] = data[i][1]*0.81*10**-3 - 3.3/2
+    c3[i-10] = data[i][2]*0.81*10**-3 - 3.3/2
+    c4[i-10] = data[i][3]*0.81*10**-3 - 3.3/2
+    c5[i-10] = data[i][4]*0.81*10**-3 - 3.3/2
 
 #Make fft
-#c1f = np.fft.rfft(c1)
-#c2f = np.fft.rfft(c2)
-#c3f = np.fft.rfft(c3)
+c1f = np.fft.rfft(c1)
+c2f = np.fft.rfft(c2)
+c3f = np.fft.rfft(c3)
 #c4f = np.fft.rfft(c4)
 #c5f = np.fft.rfft(c5)
 
@@ -43,7 +43,7 @@ freqAxStep = sampfreq/SAMPLE_COUNT
 freq = np.arange(0, sampfreq/2 + freqAxStep, freqAxStep)
         
 #X-axis with samples as unit
-x = np.arange(-SAMPLE_COUNT, SAMPLE_COUNT-1, 1)
+x = np.arange(-numSamplesPlot, numSamplesPlot-1, 1)
 #t-axis with time since first sample as unit
 t = np.arange(0, SAMPLE_COUNT*dt, dt)
 
@@ -76,12 +76,12 @@ c2_ax.plot(t[:numSamplesPlot], c2[:numSamplesPlot], color = 'blue', label = 'cha
 c3_ax.plot(t[:numSamplesPlot], c3[:numSamplesPlot], color = 'orange', label = 'channel3')
 
 
-cross1 = math_import.cross_correlate(c1, c2)
-cross2 = math_import.cross_correlate(c1, c3)
-cross3 = math_import.cross_correlate(c2, c3)
-cross_ax1.plot(x[31000:31500], cross1[31000:31500], color = 'red', label = 'channel1vs2')
-cross_ax2.plot(x[31000:31500], cross2[31000:31500], color = 'blue', label = 'channel1vs3')
-cross_ax3.plot(x[31000:31500], cross3[31000:31500], color = 'orange', label = 'channel2vs3')
+cross1 = math_import.cross_correlate(c2, c1)
+cross2 = math_import.cross_correlate(c3, c1)
+cross3 = math_import.cross_correlate(c3, c2)
+cross_ax1.plot(x[numSamplesPlot-200:numSamplesPlot+200], cross1[numSamplesPlot-200:numSamplesPlot+200], color = 'red', label = 'channel1vs2')
+cross_ax2.plot(x[numSamplesPlot-200:numSamplesPlot+200], cross2[numSamplesPlot-200:numSamplesPlot+200], color = 'blue', label = 'channel1vs3')
+cross_ax3.plot(x[numSamplesPlot-200:numSamplesPlot+200], cross3[numSamplesPlot-200:numSamplesPlot+200], color = 'orange', label = 'channel2vs3')
 
 # c4_ax.plot(t[1:numSamplesPlot], c4[1:numSamplesPlot], color = 'black', label = 'channel4')
 # c5_ax.plot(t[1:numSamplesPlot], c5[1:numSamplesPlot], color = 'green', label = 'channel5')
@@ -110,7 +110,7 @@ cross_ax3.plot(x[31000:31500], cross3[31000:31500], color = 'orange', label = 'c
 # c5_ax.legend(loc = 'upper right')
 # c5_ax.set_ylim(-0.2, 3.5)
 
-plt.savefig('Lab2_cross0_test')
+plt.savefig('Lab2_cross0_test2')
 
 # Plotting the fft of the samples
 # fft1_ax.axvline(440)
@@ -140,4 +140,15 @@ plt.savefig('Lab2_cross0_test')
 #fft3_ax.legend(loc = 'upper right')
 #fft3_ax.yaxis.tick_right()
 
-print(math_import.find_delay_in_samples(sin_sig, sin_sig))
+
+n21 = math_import.find_delay_in_samples(c2, c1)
+n31 = math_import.find_delay_in_samples(c3, c1)
+n32 = math_import.find_delay_in_samples(c3, c2)
+print(n21)
+print(n31)
+print(n32)
+#print(math_import.find_delay_in_seconds(c2,c1, sampfreq))
+#print(math_import.find_delay_in_seconds(c3,c1,sampfreq))
+#print(math_import.find_delay_in_seconds(c3,c2,sampfreq))
+print(math_import.calculate_angle(n31, n21, n32))
+

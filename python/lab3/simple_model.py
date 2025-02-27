@@ -86,7 +86,7 @@ blue_ax = fig.add_subplot(3, 2, 6)
 #np.fft.fft()
 SAMPLE_FREQ = 30
 SAMPLE_PERIOD = 1/SAMPLE_FREQ
-SAMPLE_COUNT = 887
+SAMPLE_COUNT = 893
 freqAxStep = SAMPLE_FREQ/SAMPLE_COUNT
 freq = np.arange(0, SAMPLE_FREQ/2 + freqAxStep, freqAxStep)
 
@@ -98,7 +98,7 @@ x = np.arange(0, SAMPLE_COUNT)
 
 
 
-with open('27feb_data', 'r') as file:
+with open('27feb_r0_data', 'r') as file:
     i = 0
     for line in file:
         # Split the line into components

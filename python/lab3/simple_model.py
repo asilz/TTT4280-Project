@@ -87,7 +87,7 @@ blue_ax = fig.add_subplot(3, 2, 6)
 #np.fft.fft()
 SAMPLE_FREQ = 30
 SAMPLE_PERIOD = 1/SAMPLE_FREQ
-SAMPLE_COUNT = 893
+SAMPLE_COUNT = 893 - 6 - 6
 freqAxStep = SAMPLE_FREQ/SAMPLE_COUNT
 freq = np.arange(0, SAMPLE_FREQ/2 + freqAxStep, freqAxStep)
 
@@ -99,7 +99,7 @@ x = np.arange(0, SAMPLE_COUNT)
 
 
 
-with open('mars3_jugular2_r1_data', 'r') as file:
+with open('mars3_dark_t0_data', 'r') as file:
     i = 0
     for line in file:
         # Split the line into components

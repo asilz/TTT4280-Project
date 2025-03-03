@@ -98,7 +98,7 @@ x = np.arange(0, SAMPLE_COUNT)
 
 
 
-with open('27feb_r0_data', 'r') as file:
+with open('mars3_jugular_r0_data', 'r') as file:
     i = 0
     for line in file:
         # Split the line into components

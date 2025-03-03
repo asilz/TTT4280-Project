@@ -44,11 +44,12 @@ def get_contrast(reflectance_high_blood_volume, reflectance_low_blood_volume):
 def SNR(signal, target_frequency, sampling_frequency):
     fft_y = np.fft.fft(signal)
     fft_x = np.fft.fftfreq(n = fft_y.size, d=1/sampling_frequency)
+    target_frequency = fft_x[np.argmax(np.abs(fft_y))]
     result = 0
     for i in range(len(fft_x)):
-        if(fft_x[i] < target_frequency + 0.1 and fft_x[i] > target_frequency - 0.1):
-            result += np.abs(fft_y[i])/(np.sum(np.abs(fft_y))-np.abs(fft_y[i]))
-    return result
+        if(fft_x[i] < target_frequency + 2/60 and fft_x[i] > target_frequency - 2/60):
+            result += np.abs(fft_y[i])
+    return result / (np.sum(np.abs(fft_y)))
 
 def butter_bandpass(lowcut, highcut, fs, order=5):
     return butter(order, [lowcut, highcut], fs=fs, btype='band')
@@ -115,13 +116,13 @@ red -= np.average(red)
 green -= np.average(green)
 blue -= np.average(blue)
 
-red = butter_bandpass_filter(red, 0.5, 5, SAMPLE_FREQ)
-green = butter_bandpass_filter(green, 0.5, 5, SAMPLE_FREQ)
-blue = butter_bandpass_filter(blue, 0.5, 5, SAMPLE_FREQ)
+red = butter_bandpass_filter(red, 0.5, 3, SAMPLE_FREQ)
+green = butter_bandpass_filter(green, 0.5, 3, SAMPLE_FREQ)
+blue = butter_bandpass_filter(blue, 0.5, 3, SAMPLE_FREQ)
 
 red_fft_y = np.fft.rfft(red)
 red_fft_x = freq * 60
-red_fft_ax.plot(red_fft_x[1:], np.abs(red_fft_y), color = 'red')
+red_fft_ax.plot(red_fft_x[1:], 20*np.log10(np.abs(red_fft_y)), color = 'red')
 
 green_fft_y = np.fft.rfft(green)
 green_fft_x = freq * 60
@@ -141,4 +142,4 @@ plt.show()
 
 #x = np.linspace(0,10000)
 #sig = np.sin(1*x)
-print(SNR(red, 1.0, SAMPLE_FREQ))
+print(SNR(red, 0, SAMPLE_FREQ))

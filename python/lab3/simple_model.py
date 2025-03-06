@@ -38,10 +38,10 @@ def diffusion_equation(z, mua, musr):
 def get_reflectance(mua, musr):
     return np.sqrt(3*(musr/mua + 1))
 
-def get_contrast(reflectance_high_blood_volume, reflectance_low_blood_volume):
-    return np.abs(reflectance_high_blood_volume-reflectance_low_blood_volume)/reflectance_low_blood_volume
+def get_contrast(transmittance_high_blood_volume, transmittance_low_blood_volume):
+    return np.abs(transmittance_high_blood_volume-transmittance_low_blood_volume)/transmittance_low_blood_volume
 
-def SNR(signal, target_frequency, sampling_frequency):
+def SNR(signal, sampling_frequency):
     fft_y = np.fft.fft(signal)
     fft_x = np.fft.fftfreq(n = fft_y.size, d=1/sampling_frequency)
     target_frequency = fft_x[np.argmax(np.abs(fft_y))]
@@ -59,6 +59,14 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     y = lfilter(b, a, data)
     return y
 
+def variance(input_array):
+    variance = 0
+    array_average = np.average(input_array)
+    for element in input_array:
+        variance += (element - array_average) * (element - array_average)
+    return variance/len(input_array)
+
+
     
 #bvf = 1 # Blood volume fraction, average blood amount in tissue
 oxy = 0.8 # Blood oxygenation
@@ -72,9 +80,13 @@ mua001 = get_mua(0.01, oxy, wavelength)
 mua1 = get_mua(1.0, oxy, wavelength)
 musr = get_musr(wavelength)
 
-#print(get_contrast(diffusion_equation(300*10**(-6), mua1,musr)/diffusion_equation(0.0, mua1, musr), diffusion_equation(300*10**(-6), mua001,musr)/diffusion_equation(0.0, mua001, musr)))
-#print(get_penetration_depth(mua001, musr))
-#print(diffusion_equation(0.013, mua001, musr)/diffusion_equation(0.0, mua001,musr))
+transmittance_high_blood_volume = diffusion_equation(300*10**(-6), mua1,musr)/diffusion_equation(0.0, mua1, musr)
+transmittance_low_blood_volume = diffusion_equation(300*10**(-6), mua001,musr)/diffusion_equation(0.0, mua001, musr)
+print(transmittance_high_blood_volume) # c
+print(transmittance_low_blood_volume) # c
+print(get_contrast(transmittance_high_blood_volume, transmittance_low_blood_volume)) # c
+#print(get_penetration_depth(mua001, musr)) # a
+#print(diffusion_equation(0.013, mua001, musr)/diffusion_equation(0.0, mua001,musr)) # b
 
 fig = plt.figure()
 red_fft_ax = fig.add_subplot(3, 2, 1)
@@ -87,7 +99,7 @@ blue_ax = fig.add_subplot(3, 2, 6)
 #np.fft.fft()
 SAMPLE_FREQ = 30
 SAMPLE_PERIOD = 1/SAMPLE_FREQ
-SAMPLE_COUNT = 893 - 6 - 6
+SAMPLE_COUNT = 893 - 6
 freqAxStep = SAMPLE_FREQ/SAMPLE_COUNT
 freq = np.arange(0, SAMPLE_FREQ/2 + freqAxStep, freqAxStep)
 
@@ -99,7 +111,7 @@ x = np.arange(0, SAMPLE_COUNT)
 
 
 
-with open('mars3_dark_t0_data', 'r') as file:
+with open('data_data', 'r') as file:
     i = 0
     for line in file:
         # Split the line into components
@@ -110,6 +122,8 @@ with open('mars3_dark_t0_data', 'r') as file:
             green[i] = (float(parts[1]))
             blue[i] = (float(parts[2]))
             i += 1
+            if(i == SAMPLE_COUNT):
+                break
 
 
 red -= np.average(red)
@@ -122,7 +136,7 @@ blue = butter_bandpass_filter(blue, 0.5, 3, SAMPLE_FREQ)
 
 red_fft_y = np.fft.rfft(red)
 red_fft_x = freq * 60
-red_fft_ax.plot(red_fft_x[1:], 20*np.log10(np.abs(red_fft_y)), color = 'red')
+red_fft_ax.plot(red_fft_x[1:], np.abs(red_fft_y), color = 'red')
 
 green_fft_y = np.fft.rfft(green)
 green_fft_x = freq * 60
@@ -136,10 +150,48 @@ red_ax.plot(x, red, color = 'red')
 green_ax.plot(x, green, color = 'green')
 blue_ax.plot(x, blue, color = 'blue')
 
-print(freq[np.argmax(np.abs(red_fft_y))])
+#print(freq[np.argmax(np.abs(green))])
 
 plt.show()
 
-#x = np.linspace(0,10000)
-#sig = np.sin(1*x)
-print(SNR(red, 0, SAMPLE_FREQ))
+print(SNR(green, SAMPLE_FREQ))
+
+bpms = np.zeros(4)
+
+for index in range(4):
+    string = 'mars3_jugular2_r' + str(index) + '_data'
+    with open(string, 'r') as file:
+        i = 0
+        for line in file:
+            # Split the line into components
+            parts = line.strip().split()
+            if len(parts) == 3:
+                # Convert each part to float and append to respective array
+                red[i] = (float(parts[0]))
+                green[i] = (float(parts[1]))
+                blue[i] = (float(parts[2]))
+                i += 1
+                if(i == SAMPLE_COUNT):
+                    break
+    red -= np.average(red)
+    green -= np.average(green)
+    blue -= np.average(blue)
+
+    red = butter_bandpass_filter(red, 0.5, 3, SAMPLE_FREQ)
+    green = butter_bandpass_filter(green, 0.5, 3, SAMPLE_FREQ)
+    blue = butter_bandpass_filter(blue, 0.5, 3, SAMPLE_FREQ)
+
+    red_fft_y = np.fft.fft(red)
+    green_fft_y = np.fft.fft(green)
+    blue_fft_y = np.fft.fft(blue)
+    
+    fft_x = np.fft.fftfreq(n = green_fft_y.size, d=1/SAMPLE_FREQ)
+    bpms[index] = fft_x[np.argmax(np.abs(green_fft_y))] * 60
+    
+
+print(np.average(bpms))
+print(np.sqrt(variance(bpms)))
+
+
+
+#print(np.abs(green_fft_y))

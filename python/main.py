@@ -60,6 +60,8 @@ y = I+Q
 
 y_fft = np.fft.fft(y)
 x_fft = np.fft.fftfreq(n = y_fft.size, d = dt)
+y_fft = np.fft.fftshift(y_fft)
+x_fft = np.fft.fftshift(x_fft)
 
 #Create figure and add the two plots we want
 fig = plt.figure()
@@ -86,6 +88,7 @@ radar_fft = fig.add_subplot(3,1,3)
 # c3_ax.plot(t[:numSamplesPlot], c3[:numSamplesPlot], color = 'orange', label = 'channel3')
 c4_ax.plot(t[:numSamplesPlot], c4[:numSamplesPlot], color = 'red', label = 'Q')
 c5_ax.plot(t[:numSamplesPlot], c5[:numSamplesPlot], color = 'blue', label = 'I')
+
 radar_fft.plot(x_fft, y_fft, color = 'black', label = 'fft of radar')
 
 
@@ -127,6 +130,11 @@ radar_fft.set_xlim(-50, 50)
 # c5_ax.set_ylim(-0.2, 3.5)
 
 plt.savefig('Lab4_rawData_with_fft')
+
+dopp_shift = np.argmax(abs(y_fft)) - len(y_fft) / 2
+speed = dopp_shift*(15/2413)
+
+print(f'Objektets hastighet: {round(speed, 2)} m/s. Positiv retning er MOT radaren')
 
 # Plotting the fft of the samples
 # fft1_ax.axvline(440)

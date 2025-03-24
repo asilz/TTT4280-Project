@@ -3,10 +3,10 @@ import math_import
 import matplotlib.pyplot as plt
 import numpy as np
 
-sample_period, data = raspi_import('/home/gruppe22/Documents/TTT4280-Project/C/build/out-2025-03-17-13.54.11.bin')
+sample_period, data = raspi_import('/home/gruppe22/Documents/TTT4280-Project/C/measurements/lab4_forward1/out-2025-03-24-12.23.17.bin')
 
 #Number of samples
-SAMPLE_COUNT = 31250
+SAMPLE_COUNT = 31250*2
 #Time passed between each sample (time of CLK-cycle * cycles per sample)
 dt = 1/(31.25*10**3)
 
@@ -53,8 +53,8 @@ sin_ref = np.sin(1000*2*np.pi*t) + 1
 
 
 #Making the fft of radar
-I = c5
-Q = c4*1j
+I = c5[(numSamplesPlot//2):]
+Q = c4[(numSamplesPlot//2):]*1j
 
 y = I+Q
 
@@ -86,8 +86,8 @@ radar_fft = fig.add_subplot(3,1,3)
 # c1_ax.plot(t[:numSamplesPlot], c1[:numSamplesPlot], color = 'red', label = 'channel1')
 # c2_ax.plot(t[:numSamplesPlot], c2[:numSamplesPlot], color = 'blue', label = 'channel2')
 # c3_ax.plot(t[:numSamplesPlot], c3[:numSamplesPlot], color = 'orange', label = 'channel3')
-c4_ax.plot(t[:numSamplesPlot], c4[:numSamplesPlot], color = 'red', label = 'Q')
-c5_ax.plot(t[:numSamplesPlot], c5[:numSamplesPlot], color = 'blue', label = 'I')
+c4_ax.plot(t[1:], c4[1:], color = 'red', label = 'Q')
+c5_ax.plot(t[1:], c5[1:], color = 'blue', label = 'I')
 
 radar_fft.plot(x_fft, y_fft, color = 'black', label = 'fft of radar')
 
